@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แก้ไขการจอง - Classroom Booking System</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            200: '#fed7aa',
+                            300: '#fdba74',
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            800: '#9a3412',
+                            900: '#7c2d12',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-primary-50 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-white shadow-lg border-b-4 border-primary-600">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <i class="fas fa-edit text-3xl text-primary-600 mr-3"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">แก้ไขการจอง</h1>
+                        <p class="text-sm text-gray-600">แก้ไขข้อมูลการจอง #{{ booking.booking_id }}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('index') }}"
+                       class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        กลับหน้าหลัก
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mb-6">
+                    {% for category, message in messages %}
+                        <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded-lg flex items-center">
+                            <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }} mr-2"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Current Booking Info -->
+        <div class="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+            <h3 class="text-sm font-medium text-primary-800 mb-2">
+                <i class="fas fa-info-circle mr-1"></i>
+                ข้อมูลการจองปัจจุบัน
+            </h3>
+            <div class="text-sm text-primary-700 grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div><strong>ผู้จอง:</strong> {{ booking.user_name }}</div>
+                <div><strong>ห้อง:</strong> {{ booking.room_name }}</div>
+                <div><strong>เวลา:</strong> {{ booking.start_time }} - {{ booking.end_time }}</div>
+                <div><strong>วันที่:</strong> {{ booking.date }}</div>
+            </div>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-xl shadow-lg p-8">
+            <form method="POST" class="space-y-6">
+
+                <!-- User Selection -->
+                <div>
+                    <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-user mr-1"></i>
+                        เลือกผู้จอง
+                    </label>
+                    <select id="user_id" name="user_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition duration-200">
+                        <option value="">-- เลือกผู้จอง --</option>
+                        {% for user in users %}
+                        <option value="{{ user.user_id }}" {{ 'selected' if user.user_id == booking.user_id else '' }}>
+                            {{ user.name }} ({{ user.email }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Room Selection -->
+                <div>
+                    <label for="room_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-door-open mr-1"></i>
+                        เลือกห้องเรียน
+                    </label>
+                    <select id="room_id" name="room_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition duration-200">
+                        <option value="">-- เลือกห้องเรียน --</option>
+                        {% for room in rooms %}
+                        <option value="{{ room.room_id }}" {{ 'selected' if room.room_id == booking.room_id else '' }}>
+                            {{ room.room_name }} ({{ room.capacity }} ที่นั่ง)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- TimeSlot Selection -->
+                <div>
+                    <label for="timeslot_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-clock mr-1"></i>
+                        เลือกช่วงเวลา
+                    </label>
+                    <select id="timeslot_id" name="timeslot_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition duration-200">
+                        <option value="">-- เลือกช่วงเวลา --</option>
+                        {% for timeslot in timeslots %}
+                        <option value="{{ timeslot.timeslot_id }}" {{ 'selected' if timeslot.timeslot_id == booking.timeslot_id else '' }}>
+                            {{ timeslot.start_time }} - {{ timeslot.end_time }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Date Selection -->
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-calendar mr-1"></i>
+                        วันที่จอง
+                    </label>
+                    <input type="date" id="date" name="date" required
+                           value="{{ booking.date }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition duration-200"
+                           min="{{ '2026-01-01' }}" max="{{ '2026-12-31' }}">
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="flex space-x-4 pt-4">
+                    <button type="submit"
+                            class="flex-1 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-save mr-2"></i>
+                        บันทึกการแก้ไข
+                    </button>
+
+                    <a href="{{ url_for('index') }}"
+                       class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-times mr-2"></i>
+                        ยกเลิก
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Warning Card -->
+        <div class="bg-primary-50 border border-primary-300 rounded-lg p-4 mt-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-primary-500"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-primary-800">
+                        คำเตือน
+                    </h3>
+                    <div class="mt-2 text-sm text-primary-700">
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>การแก้ไขข้อมูลจะส่งผลต่อการจองทันที</li>
+                            <li>กรุณาตรวจสอบข้อมูลให้ถูกต้องก่อนบันทึก</li>
+                            <li>หากต้องการยกเลิกการจอง สามารถลบได้จากหน้าหลัก</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="text-center text-gray-500 text-sm">
+                <p>&copy; 2026 Classroom Booking System. สร้างด้วย Flask & Tailwind CSS</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
